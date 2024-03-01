@@ -22,8 +22,58 @@ app.get('/api/employees', async (req, res, next) => {
     }
 })
 
+// Get all departments 
+app.get('/api/employees', async (req, res, next) => {
+    try {
+        const SQL = `SELECT * FROM departments;`
+        const response = await client.query(SQL) 
+        res.send(response.rows) 
+    } catch (error) {
+        next(error)
+    }
+})
 
+// Create a new employee 
+app.post('/api/employees', async (req, res, next) => {
+    try {
+        const { name, department_id } = req.body 
+        const SQL = `INSERT INTO employees (name, department_id) VALUES ($1, $2) RETURNING *;`
+        const response = await client.query(SQL, [name, department_id])
+    } catch (error) {
+        next(error) 
+    }
+})
 
+// Delete an employee by ID number 
+app.delete('/api/employees/:id', async (req, res, next) => {
+    try {
+        const employeeId = req.params.id 
+        const SQL = `DELETE FROM employees WHERE id = $1;`
+        await client.query(SQL, [employeeId])
+        res.sendStatus(204)
+    } catch (error) {
+        next(error) 
+    }
+})
+
+// Update an employee by ID number 
+app.put('/api/employees/:id', async (req, res, next) => {
+    try {
+        const employeeId = req.params.id 
+        const { name, department_id } = req.body 
+        const SQL = `UPDATE employees SET name = $1, department_id = $2, updated_at = now() WHERE id = $3 RETURNING *;`
+        const response = await client.query(SQL, [name, department_id, employeeId])
+        res.send(response.rows[0])
+    } catch (error) {
+        next(error) 
+    }
+})
+
+// Error handling middleware 
+app.use((err, req, res, next) => {
+    console.error(err) 
+    res.status(500).json({ error: 'Internal Server Error' })
+})
 
 // Start the server 
 const init = async () => { 
