@@ -11,7 +11,16 @@ app.use(express.json())
 app.use(morgan('dev'))
 
 
-
+// Get all employees 
+app.get('/api/employees', async (req, res, next) => {
+    try {
+        const SQL = `SELECT * FROM employees;`
+        const response = await client.query(SQL) 
+        res.send(response.rows)
+    } catch (error) {
+        next(error) 
+    }
+})
 
 
 
